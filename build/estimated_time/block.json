@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "create-block/estimated-time",
+  "version": "0.1.0",
+  "title": "Reading Time",
+  "category": "widgets",
+  "icon": "tagcloud",
+  "description": "A block that will display the estimated reading time",
+  "example": {},
+  "supports": {
+    "html": false
+  },
+  "textdomain": "custom-blog-blocks",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScript": "file:./view.js"
+}
