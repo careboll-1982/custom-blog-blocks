@@ -1,5 +1,6 @@
 import { SelectControl, Spinner } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
+
 
 /**
  * Retrieves the translation of text.
@@ -14,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
  */
-import { useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -32,51 +33,54 @@ import './editor.scss';
  *
  * @return {Element} Element to render.
  */
-export default function Edit() {
+export default function Edit({ attributes, setAttributes }) {
 	const API_KEY = '92a1c130f7974347888163753240207';
-	const blockProps = useBlockProps();
-	const [city, setCity] = useState('');
-	const [weather, setWeather] = useState(null);
-	const [loading, setLoading] = useState(false);
 
-	const fetchWeather = async (selectedCity) => {
-		setLoading(true);
-		const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${selectedCity}`);
-		const data = await response.json();
-		setWeather(data);
-		setLoading(false);
-	};
+		const blockProps = useBlockProps();
+		const { city, weatherData } = attributes;
+		const [loading, setLoading] = useState(false);
 
-	const handleChange = (value) => {
-		setCity(value);
-		if (value) {
-			fetchWeather(value);
-		} else {
-			setWeather(null);
-		}
-	};
+		useEffect(() => {
+			if (city) {
+				fetchWeather(city);
+			}
+		}, [city]);
 
-	return (
-		<div {...blockProps}>
-			<SelectControl
-				label="Select a City"
-				value={city}
-				options={[
-					{ label: 'Select a city', value: '' },
-					{ label: 'Barranquilla', value: 'Barranquilla' },
-					{ label: 'Bogota', value: 'Bogota' },
-					{ label: 'Cali', value: 'Cali' },
-				]}
-				onChange={handleChange}
-			/>
-			{loading && <Spinner />}
-			{weather && (
-				<div>
-					<h3>{weather.location.name}</h3>
-					<p>{weather.current.temp_c}°C</p>
-					<p>{weather.current.condition.text}</p>
-				</div>
-			)}
-		</div>
-	);
+		const fetchWeather = async (selectedCity) => {
+			setLoading(true);
+			const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${selectedCity}`);
+			const data = await response.json();
+			setAttributes({ weatherData: data });
+			setLoading(false);
+		};
+
+		const handleChange = (value) => {
+			setAttributes({ city: value });
+		};
+
+		return (
+			<div {...blockProps}>
+				<InspectorControls>
+					<SelectControl
+						label="Select a City"
+						value={city}
+						options={[
+							{ label: 'Select a city', value: '' },
+							{ label: 'Barranquilla', value: 'Barranquilla' },
+							{ label: 'Bogota', value: 'Bogota' },
+							{ label: 'Cali', value: 'Cali' },
+						]}
+						onChange={handleChange}
+					/>
+				</InspectorControls>
+				{loading && <Spinner />}
+				{weatherData && (
+					<div>
+						<h3>{weatherData.location.name}</h3>
+						<p>{weatherData.current.temp_c}°C</p>
+						<p>{weatherData.current.condition.text}</p>
+					</div>
+				)}
+			</div>
+		);
 }
